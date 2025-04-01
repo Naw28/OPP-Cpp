@@ -118,11 +118,11 @@ private:
     string m_taikhoan;
 
 public:
-    NguoiMuon(const string &tenNguoiMuon, const string &taikhoan) : m_maNguoiMuon("A" + to_string(m_id++)), m_tenNguoiMuon(tenNguoiMuon), m_taikhoan(taikhoan) {}
+    NguoiMuon(const string &tenNguoiMuon, const string &taikhoan) : m_maNguoiMuon("id" + to_string(m_id++)), m_tenNguoiMuon(tenNguoiMuon), m_taikhoan(taikhoan) {}
     NguoiMuon(const string &tenNguoiMuon, const string &ngayMuon, const string &sachDaMuon, const string &taikhoan)
-        : m_maNguoiMuon("A" + to_string(m_id++)), m_tenNguoiMuon(tenNguoiMuon), m_ngayMuon(ngayMuon), m_sachDaMuon(sachDaMuon), m_taikhoan(taikhoan) {}
+        : m_maNguoiMuon("id" + to_string(m_id++)), m_tenNguoiMuon(tenNguoiMuon), m_ngayMuon(ngayMuon), m_sachDaMuon(sachDaMuon), m_taikhoan(taikhoan) {}
     NguoiMuon(const NguoiMuon &other)
-        : m_maNguoiMuon("A" + to_string(m_id++)), m_tenNguoiMuon(other.getTenNguoiMuon()), m_ngayMuon(other.getNgayMuon()), m_sachDaMuon(other.getSachDaMuon()) {}
+        : m_maNguoiMuon("id" + to_string(m_id++)), m_tenNguoiMuon(other.getTenNguoiMuon()), m_ngayMuon(other.getNgayMuon()), m_sachDaMuon(other.getSachDaMuon()) {}
 
     void setTenNguoiMuon(const string &tenNguoiMuon) { m_tenNguoiMuon = tenNguoiMuon; }
     void setNgayMuon(const string &ngayMuon) { m_ngayMuon = ngayMuon; }
@@ -179,7 +179,7 @@ public:
         m_trangThai = "Da muon";
     }
 
-    void traSach()
+    QuanLyMuonTra *traSach()
     {
         time_t now = time(NULL);
         tm *local = localtime(&now);
@@ -188,6 +188,7 @@ public:
         m_thoiHan = 0;
         m_thoiDiemTra = time;
         m_trangThai = "Da tra";
+        return this;
     }
     string getMaNguoiMuon() { return m_maNguoiMuon; }
     string getMaSach() { return m_maSach; }
@@ -278,9 +279,12 @@ void TimSach();
 void CapNhatSach();
 void HienTatCaSach();
 void TongSoSach();
+void XemSoSach(const string &username);
+void LichSuMuonTra();
+void LichSuNguoiMuon();
 
 void MuonSach(const string &username);
-
+void TraSach(const string &username);
 int NguoiMuon::m_id = 0;
 
 void MainMenu()
@@ -338,10 +342,9 @@ void DangKy(QuanLyCapNhat<TaiKhoan *> &taikhoan)
     cout << "\nDang ky thanh cong\n";
     MainMenu();
 }
-
 void DangNhap(QuanLyCapNhat<TaiKhoan *> &taikhoan)
 {
-    cout << "------- Dang nhap -------\n";
+    cout << "\n------- Dang nhap -------\n";
     string username, password;
     cout << "Nhap username: ";
     cin >> username;
@@ -366,7 +369,6 @@ void DangNhap(QuanLyCapNhat<TaiKhoan *> &taikhoan)
     }
     throw LoiLogin();
 }
-
 void DangXuat(QuanLyCapNhat<TaiKhoan *> &taikhoan)
 {
     bool dangxuat;
@@ -395,7 +397,7 @@ void MenuThuThu()
         cout << "5. Hien tat ca sach" << endl;
         cout << "6. Tong so sach hien tai" << endl;
         cout << "7. Tra cuu lich su muon sach" << endl;
-        cout << "8. Tra cuu lich nguoi muon" << endl;
+        cout << "8. Tra cuu lich su nguoi muon" << endl;
         cout << "9. Dang xuat" << endl;
         cout << "0. Thoat" << endl;
         cout << "Nhap lua chon: ";
@@ -424,8 +426,10 @@ void MenuThuThu()
             TongSoSach();
             break;
         case 7:
+            LichSuMuonTra();
             break;
         case 8:
+        LichSuNguoiMuon();
             break;
         case 9:
             DangXuat(taikhoan);
@@ -440,6 +444,10 @@ void MenuThuThu()
         cout << "Ban muon tiep tuc chuong trinh?(1/0): ";
         cin >> tmp;
         cin.ignore();
+        if (tmp != 0 && tmp != 1)
+        {
+            throw Thoat();
+        }
         if (!tmp)
         {
             throw Thoat();
@@ -457,7 +465,8 @@ void MenuNguoiDung(const string &username)
         cout << "2. Tra sach" << endl;
         cout << "3. Tim kiem sach" << endl;
         cout << "4. Hien thi tat ca sach" << endl;
-        cout << "5. Dang xuat" << endl;
+        cout << "5. Xem so sach co the muon" << endl;
+        cout << "6. Dang xuat" << endl;
         cout << "0. Thoat" << endl;
         cout << "Nhap lua chon: ";
 
@@ -469,9 +478,8 @@ void MenuNguoiDung(const string &username)
         case 1:
             MuonSach(username);
             break;
-
         case 2:
-
+            TraSach(username);
             break;
         case 3:
             TimSach();
@@ -480,6 +488,9 @@ void MenuNguoiDung(const string &username)
             HienTatCaSach();
             break;
         case 5:
+            XemSoSach(username);
+            break;
+        case 6:
             DangXuat(taikhoan);
             break;
         case 0:
@@ -492,6 +503,10 @@ void MenuNguoiDung(const string &username)
         cout << "Ban muon tiep tuc chuong trinh?(1/0): ";
         cin >> tmp;
         cin.ignore();
+        if (tmp != 0 && tmp != 1)
+        {
+            throw Thoat();
+        }
         if (!tmp)
         {
             throw Thoat();
@@ -600,6 +615,11 @@ void CapNhatSach()
 }
 void HienTatCaSach()
 {
+    if (sach.getALL().empty())
+    {
+        cout << "\nKhong co sach trong thu vien\n";
+        return;
+    }
     cout << "\n----- THU VIEN SACH -----\n";
     for (auto &s : sach.getALL())
     {
@@ -620,6 +640,84 @@ void TongSoSach()
     }
     cout << "Tong so sach hien tai: " << sum << endl;
 }
+void LichSuMuonTra()
+{
+    ifstream file("lichsumuontra.txt");
+    if (!file.is_open())
+    {
+        throw LoiFile();
+    }
+    string idng, idsach, sluong, thoihan, muon, tra, trangthai;
+    if (file.peek() == EOF)
+    {
+        cout << "\nLich su trong!!!\n";
+        return;
+    }
+    cout << "\n----- LICH SU MUON SACH -----\n";
+    while (file)
+    {
+        getline(file, idng, ',');
+        getline(file, idsach, ',');
+        getline(file, sluong, ',');
+        getline(file, thoihan, ',');
+        getline(file, muon, ',');
+        getline(file, tra, ',');
+        getline(file, trangthai);
+        cout << "Ma nguoi muon: " << idng << endl;
+        cout << "Ma sach: " << idsach << endl;
+        cout << "So luong: " << sluong << endl;
+        cout << "Thoi han: " << thoihan << endl;
+        cout << "Thoi diem muon: " << muon << endl;
+        cout << "Thoi diem tra: " << tra << endl;
+        cout << "Trang thai: " << trangthai << endl;
+        cout << "-----------------------------\n";
+    }
+    file.close();
+    return;
+}
+void LichSuNguoiMuon()
+{
+    string ma;
+    cout<<"Nhap ma nguoi muon: ";
+    getline(cin, ma);
+
+    ifstream file("lichsumuontra.txt");
+    if (!file.is_open())
+    {
+        throw LoiFile();
+    }
+    string idng, idsach, sluong, thoihan, muon, tra, trangthai;
+    if (file.peek() == EOF)
+    {
+        cout << "\nLich su trong!!!\n";
+        return;
+    }
+    cout << "\n------ LICH SU NGUOI MUON ------\n";
+    while (file)
+    {
+        getline(file, idng, ',');
+        getline(file, idsach, ',');
+        getline(file, sluong, ',');
+        getline(file, thoihan, ',');
+        getline(file, muon, ',');
+        getline(file, tra, ',');
+        getline(file, trangthai);
+        if(idng == ma)
+        {
+            cout << "Ma nguoi muon: " << idng << endl;
+            cout << "Ma sach: " << idsach << endl;
+            cout << "So luong: " << sluong << endl;
+            cout << "Thoi han: " << thoihan << endl;
+            cout << "Thoi diem muon: " << muon << endl;
+            cout << "Thoi diem tra: " << tra << endl;
+            cout << "Trang thai: " << trangthai << endl;
+            cout << "--------------------------------\n";
+        }
+    }
+    file.close();
+    return;
+}
+
 void MuonSach(const string &username)
 {
     string id;
@@ -650,38 +748,131 @@ void MuonSach(const string &username)
             }
             else
             {
-                n->setGioiHanMuon(n->getGioHanMuon() - soluong);
+                if (n->getGioHanMuon() < soluong)
+                {
+                    throw LoiQuaGioiHanMuon();
+                }
+                else
+                {
+                    for (auto &s : sach.getALL())
+                    {
+                        if (s->KiemTraTrungLap(id))
+                        {
+                            if (s->getSoLuong() <= 0)
+                            {
+                                throw LoiKhongDuSach();
+                            }
+                            else if (s->getSoLuong() < soluong)
+                            {
+                                throw LoiKhongDuSach();
+                            }
+                            else
+                            {
+                                s->setSoLuong(s->getSoLuong() - soluong);
+                                QuanLyMuonTra *a = new QuanLyMuonTra(idNguoiMuon, id, soluong);
+                                file << a->getMaNguoiMuon() << "," << a->getMaSach() << "," << a->getSoluong() << "," << a->getThoiHan() << ","
+                                     << a->getThoiDiemMuon() << "," << a->getThoiDiemTra() << "," << a->getTrangThai() << endl;
+                                n->setSachDaMuon(s->getTenSach());
+                                n->setGioiHanMuon(n->getGioHanMuon() - soluong);
+                                cout << "\nMuon sach thanh cong!!!\n";
+                                cout << "So luong sach ban co the muon: " << n->getGioHanMuon() << endl;
+                                delete a;
+                                file.close();
+                                return;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    for (auto &s : sach.getALL())
+    cout << "\nSach khong ton tai!!!\n";
+    return;
+}
+void TraSach(const string &username)
+{
+    string id;
+    string idNguoiMuon;
+    int soluong;
+    cout << "Nhap id sach: ";
+    getline(cin, id);
+    cout << "Nhap so luong muon tra: ";
+    cin >> soluong;
+    if (isdigit(soluong) || soluong > 3 || soluong <= 0)
     {
-        if (s->KiemTraTrungLap(id))
+        throw invalid_argument("So luong khong hop le!!!");
+    }
+
+    for (auto &n : nguoimuon.getALL())
+    {
+        if (n->getTaiKhoan() == username)
         {
-            if (s->getSoLuong() <= 0)
+            idNguoiMuon = n->getMaNguoiMuon();
+            string idng;
+            string idsach;
+            string sl;
+            string thoihan;
+            string time;
+            string rest;
+            ifstream file("lichsumuontra.txt");
+            if (!file.is_open())
             {
-                throw LoiKhongDuSach();
+                throw LoiFile();
             }
-            else if (s->getSoLuong() < soluong)
+
+            while (file)
             {
-                throw LoiKhongDuSach();
+                getline(file, idng, ',');
+                getline(file, idsach, ',');
+                getline(file, sl, ',');
+                getline(file, thoihan, ',');
+                getline(file, time, ',');
+                getline(file, rest);
+
+                if (idng == idNguoiMuon && idsach == id)
+                {
+                    for (auto &s : sach.getALL())
+                    {
+                        if (s->getMaSach() == id)
+                        {
+                            s->setSoLuong(s->getSoLuong() + soluong);
+                            QuanLyMuonTra *a = (new QuanLyMuonTra(idng, id, soluong))->traSach();
+                            ofstream of("lichsumuontra.txt", ios::app);
+                            if (!file.is_open())
+                            {
+                                throw LoiFile();
+                            }
+                            of << a->getMaNguoiMuon() << "," << a->getMaSach() << "," << a->getSoluong() << "," << a->getThoiHan() << ","
+                               << time << "," << a->getThoiDiemTra() << "," << a->getTrangThai() << endl;
+                            n->setGioiHanMuon(n->getGioHanMuon() + soluong);
+                            delete a;
+                            of.close();
+                        }
+                    }
+                    file.close();
+                    cout << "\nTra sach thanh cong!!!\n";
+                    return;
+                }
             }
-            else
-            {
-                s->setSoLuong(s->getSoLuong() - soluong);
-                muontra.Them(new QuanLyMuonTra(idNguoiMuon, id, soluong));
-                QuanLyMuonTra *a = new QuanLyMuonTra(idNguoiMuon, id, soluong);
-                file << a->getMaNguoiMuon() << "," << a->getMaSach() << "," << a->getSoluong() << "," << a->getThoiHan() << ","
-                     << a->getThoiDiemMuon() << "," << a->getThoiDiemTra() << "," << a->getTrangThai() << endl;
-                cout << "Muon sach thanh cong!!!\n";
-                delete a;
-                file.close();
-                return;
-            }
+            file.close();
+            cout << "\nBan chua muon sach nay!!!\n";
+            return;
         }
     }
 }
+void XemSoSach(const string &username)
+{
+    for (auto &n : nguoimuon.getALL())
+    {
+        if (n->getTaiKhoan() == username)
+        {
+            cout << "\nSo luong sach ban co the muon: " << n->getGioHanMuon() << endl;
+            return;
+        }
+    }
+}
+
 int main()
 {
     try
@@ -694,5 +885,6 @@ int main()
     catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
+        return 1;
     }
 }
